@@ -10,3 +10,4 @@ Real data analysis:
 I.
 II.
 III
+Steps: Harnomization, clumping, and running MR.
