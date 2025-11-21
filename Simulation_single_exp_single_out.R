@@ -13,10 +13,6 @@ Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp")
 Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 args <- commandArgs(trailingOnly = T)
-param = read.csv(args[1], header = T)
-offset = as.numeric(args[2])
-args = as.numeric(unlist(param[offset,]))
-print(args)
 
 m = args[1]
 nx = args[2]
@@ -36,7 +32,6 @@ a_phi = args[13]*(-1)
 b_phi = args[13]
 c_gamma = args[14]
 c_theta = args[15]
-
 
 out = NULL
 nrep = 1000
@@ -61,7 +56,7 @@ b_out = b_out_raw[iv_keep]; se_out = se_out_raw[iv_keep]
 b_exp = b_exp_raw[iv_keep]; se_exp = se_exp_raw[iv_keep]
 
 # run MR
-# FusioMR empirical
+# FusioMR 
 niter = 20000
 # parameters for variance priors
 # use all SNPs before pval thresholding
@@ -91,17 +86,16 @@ bci = quantile(res2$beta_tk[ids], probs=c(0.025,0.975), na.rm=T)
 # pseudo_p = 2*min(prop_neg, 1-prop_neg)
 # prop_small = mean(abs(res2$beta_tk[ids]) < se_bhat2*0.1)
 
-
 # output
-tmp = c(seed = ii, K = K, s2_gamma_theo = (b_gamma-a_gamma)^2/12, s2_theta_theo = (b_alpha-a_alpha)^2/12, s2_gamma_emp = max(1e-3, (var(b_exp_raw) - mean(se_exp_raw)^2)), s2_theta_emp = max(1e-6, (var(b_out_raw)-mean(se_out_raw^2))), b_fusio_emp = bhat2, se_fusio_emp = se_bhat2, cover_fusio_emp = bci[2] > theta & bci[1] < theta, fusio_emp = bci[2] < 0 | bci[1] > 0)
+tmp = c(seed = ii, K = K, b_fusio = bhat2, se_fusio = se_bhat2, cover_fusio = bci[2] > theta & bci[1] < theta, fusio = bci[2] < 0 | bci[1] > 0)
 out = rbind(out, tmp)
 } # end if
 } # end loop
 
 out = as.data.frame(out)
-colnames(out) = c('seed', 'K', 's2_gamma_theo', 's2_theta_theo', 's2_gamma_emp', 's2_theta_emp', 'b_fusio_emp', 'se_fusio_emp', 'cover_fusio_emp', 'fusio_emp')
+colnames(out) = c('seed', 'K', 'b_fusio', 'se_fusio', 'cover_fusio', 'fusio')
 
-out_file_name = paste0("out/sim2h_m_", m, "_nx_", nx, "_ny_", ny, "_bgamma_", b_gamma, "_quhp_", q_uhp, "_balpha_", b_alpha, "_theta_", theta, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_qchp_", q_chp, "_bphi_", b_phi, "_seed_", seed_k, ".txt")
+out_file_name = paste0("out/sim_m_", m, "_nx_", nx, "_ny_", ny, "_bgamma_", b_gamma, "_quhp_", q_uhp, "_balpha_", b_alpha, "_theta_", theta, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_qchp_", q_chp, "_bphi_", b_phi, "_seed_", seed_k, ".txt")
 fwrite(out, out_file_name)
 
 cat("File saved!\n", out_file_name)
