@@ -5,6 +5,7 @@ library(LaplacesDemon)
 library(dirmult)
 library(invgamma)
 library(Rcpp)
+library(MendelianRandomization)
 
 source("dgf/dgm4.R")
 source("functions/set_var_prior.R")
@@ -86,6 +87,23 @@ bci = quantile(res2$beta_tk[ids], probs=c(0.025,0.975), na.rm=T)
 # pseudo_p = 2*min(prop_neg, 1-prop_neg)
 # prop_small = mean(abs(res2$beta_tk[ids]) < se_bhat2*0.1)
 
+# competing methods
+mr.obj = MendelianRandomization::mr_input(bx = b_exp, bxse = se_exp, by = b_out, byse = se_out)
+# IVW fixed
+IVW_f = MendelianRandomization::mr_ivw(mr.obj, model = 'fixed')
+b_ivw = IVW_f$Estimate; se_ivw = IVW_f$StdError
+# MR-Egger
+Egger = try(MendelianRandomization::mr_egger(mr.obj))
+if(class(Egger) != 'try-error' & !is.null(Egger)) {
+b_egger = Egger$Estimate; se_egger = Egger$StdError.Est
+} else {b_egger = se_egger = NA}
+# cML
+cml = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = F, num_pert = 200, n = nx)
+b_cml = cml$Estimate; se_cml = cml$StdError
+# cML-DP
+cml_dp = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = T, num_pert = 200, n = nx)
+b_cml_dp = cml_dp$Estimate; se_cml_dp = cml_dp$StdError
+  
 # output
 tmp = c(seed = ii, K = K, b_fusio = bhat2, se_fusio = se_bhat2, cover_fusio = bci[2] > theta & bci[1] < theta, fusio = bci[2] < 0 | bci[1] > 0)
 out = rbind(out, tmp)
@@ -93,7 +111,7 @@ out = rbind(out, tmp)
 } # end loop
 
 out = as.data.frame(out)
-colnames(out) = c('seed', 'K', 'b_fusio', 'se_fusio', 'cover_fusio', 'fusio')
+colnames(out) = c('seed', 'K', 'b_fusio', 'b_ivw', 'b_egger', 'b_cml', 'b_cml_dp', 'se_fusio', 'se_ivw', 'se_egger', 'se_cml', 'se_cml_dp', 'cover_fusio', 'cover_ivw', 'cover_egger', 'cover_cml', 'cover_cml_dp', 'fusio', 'ivw', 'egger', 'cml', 'cml_dp')
 
 out_file_name = paste0("out/sim_m_", m, "_nx_", nx, "_ny_", ny, "_bgamma_", b_gamma, "_quhp_", q_uhp, "_balpha_", b_alpha, "_theta_", theta, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_qchp_", q_chp, "_bphi_", b_phi, "_seed_", seed_k, ".txt")
 fwrite(out, out_file_name)
