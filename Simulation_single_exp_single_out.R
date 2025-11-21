@@ -10,7 +10,7 @@ source("dgf/dgm4.R")
 source("functions/set_var_prior.R")
 source("functions/set_init.R")
 Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp")
-Rcpp::sourceCpp("fusiomr/fastlm.cpp")
+Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 args <- commandArgs(trailingOnly = T)
 param = read.csv(args[1], header = T)
