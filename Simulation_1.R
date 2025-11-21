@@ -7,9 +7,10 @@ library(invgamma)
 library(Rcpp)
 
 source("dgf/dgm4.R")
-source("functions/functions.R")
-Rcpp::sourceCpp("code/gibbs_seso_uhp_only.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
-Rcpp::sourceCpp("code/fastlm.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
+source("functions/set_var_prior.R")
+source("functions/set_init.R")
+Rcpp::sourceCpp("fusiomr/gibbs_seso_uhp_only.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
+Rcpp::sourceCpp("fusiomr/fastlm.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
 
 args <- commandArgs(trailingOnly = T)
 param = read.csv(args[1], header = T)
