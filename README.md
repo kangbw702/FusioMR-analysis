@@ -10,6 +10,8 @@ This repository contains the full set of R scripts used for the simulation studi
 
 * Before running any code, update all file paths in the scripts to match your local directory structure.
 
-* Codes are largely self-explained. If you have any quesions, encounter issues, or would like to discuss methodological extensions, feel free to open an issue in this repository or contact Bowei Kang at kbw@uchicago.edu.
+* Codes are largely self-explained.
+*
+* If you have any quesions, encounter issues, or would like to discuss methodological extensions, feel free to open an issue in this repository or contact Bowei Kang at kbw@uchicago.edu.
 
 
