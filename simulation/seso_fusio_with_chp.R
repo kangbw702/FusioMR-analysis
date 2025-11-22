@@ -10,7 +10,7 @@ library(Rcpp)
 source("dgf/dgm4.R")
 source("functions/set_var_prior.R")
 source("functions/set_init_seso.R")
-source("functions/label_flip.R")
+source("functions/utilities.R")
 Rcpp::sourceCpp("fusiomr/fusiomr_s_with_chp.cpp")
 Rcpp::sourceCpp("dgf/fastlm.cpp")
 
