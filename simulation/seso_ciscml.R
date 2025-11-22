@@ -3,17 +3,10 @@ library(tidyverse)
 library(Rcpp)
 library(cisMRcML)
 
-source("code/dgm4.R")
-Rcpp::sourceCpp("code/fastlm.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
+source("dgf/dgm4.R")
+Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 args <- commandArgs(trailingOnly = T)
-param = read.csv(args[1], header = T)
-offset = as.numeric(args[2])
-args = as.numeric(unlist(param[offset,]))
-print(args)
-
-#param = read.csv("param_sim2.csv", header = T)
-#args = as.numeric(unlist(param[1,]))
 
 m = args[1]
 nx = args[2]
