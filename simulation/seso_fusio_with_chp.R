@@ -10,19 +10,11 @@ library(Rcpp)
 source("dgf/dgm4.R")
 source("functions/set_var_prior.R")
 source("functions/set_init_seso.R")
-source("code/label_flip.R")
-Rcpp::sourceCpp("code/gibbs_seso_uhpchp.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
-Rcpp::sourceCpp("code/fastlm.cpp", cacheDir ="/gpfs/data/linchen-lab/Bowei/")
+source("functions/label_flip.R")
+Rcpp::sourceCpp("fusiomr/gibbs_seso_uhpchp.cpp")
+Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 args <- commandArgs(trailingOnly = T)
-param = read.csv(args[1], header = T)
-offset = as.numeric(args[2])
-args = as.numeric(unlist(param[offset,]))
-print(args)
-
-#param = read.csv("param_sim3.csv", header = T)
-#offset = 1
-#args = as.numeric(unlist(param[offset,]))
 
 m = args[1]
 nx = args[2]
@@ -98,25 +90,7 @@ bci = post_flip$bci
 # prop_neg = mean(res2$beta_tk[ids] < 0) # F_hat(0)
 # pseudo_p = 2*min(prop_neg, 1-prop_neg)
 # prop_small = mean(abs(res2$beta_tk[ids]) < se_bhat2*0.1)
-
-# competing methods
-mr.obj = MendelianRandomization::mr_input(bx = b_exp, bxse = se_exp, by = b_out, byse = se_out)
-# IVW fixed
-IVW_f = MendelianRandomization::mr_ivw(mr.obj, model = 'fixed')
-b_ivw = IVW_f$Estimate; se_ivw = IVW_f$StdError
-# MR-Egger
-Egger = try(MendelianRandomization::mr_egger(mr.obj))
-if(class(Egger) != 'try-error' & !is.null(Egger)) {
-b_egger = Egger$Estimate; se_egger = Egger$StdError.Est
-} else {b_egger = se_egger = NA}
-# cML
-cml = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = F, num_pert = 200, n = nx)
-b_cml = cml$Estimate; se_cml = cml$StdError
-# cML-DP
-#cml_dp = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = T, num_pert = 200, n = nx)
-#b_cml_dp = cml_dp$Estimate; se_cml_dp = cml_dp$StdError
-b_cml_dp = 0; se_cml_dp = 1
-
+  
 # output
 tmp = c(seed = ii, K = K, s2_gamma_theo = (b_gamma-a_gamma)^2/12, s2_theta_theo = (b_alpha-a_alpha)^2/12, s2_gamma_emp = max(1e-3, (var(b_exp_raw) - mean(se_exp_raw)^2)), s2_theta_emp = max(1e-6, (var(b_out_raw)-mean(se_out_raw^2))), 
 b_fusio = bhat2, b_ivw = b_ivw, b_egger = b_egger, b_cml = b_cml, b_cml_dp = b_cml_dp, 
