@@ -92,19 +92,16 @@ bci = post_flip$bci
 # prop_small = mean(abs(res2$beta_tk[ids]) < se_bhat2*0.1)
   
 # output
-tmp = c(seed = ii, K = K, s2_gamma_theo = (b_gamma-a_gamma)^2/12, s2_theta_theo = (b_alpha-a_alpha)^2/12, s2_gamma_emp = max(1e-3, (var(b_exp_raw) - mean(se_exp_raw)^2)), s2_theta_emp = max(1e-6, (var(b_out_raw)-mean(se_out_raw^2))), 
-b_fusio = bhat2, b_ivw = b_ivw, b_egger = b_egger, b_cml = b_cml, b_cml_dp = b_cml_dp, 
-se_fusio = se_bhat2, se_ivw = se_ivw, se_egger = se_egger, se_cml = se_cml, se_cml_dp = se_cml_dp,
-cover_fusio = bci[2] > theta & bci[1] < theta, cover_ivw = b_ivw + 1.96*se_ivw > theta & b_ivw - 1.96*se_ivw < theta, cover_egger = b_egger + 1.96*se_egger > theta & b_egger - 1.96*se_egger < theta, cover_cml = b_cml + 1.96*se_cml > theta & b_cml - 1.96*se_cml < theta, cover_cml_dp = b_cml_dp + 1.96*se_cml_dp > theta & b_cml_dp - 1.96*se_cml_dp < theta,
-fusio = bci[2] < 0 | bci[1] > 0, ivw = b_ivw + 1.96*se_ivw < 0 | b_ivw - 1.96*se_ivw > 0, egger = b_egger + 1.96*se_egger < 0 | b_egger - 1.96*se_egger > 0, cml = b_cml + 1.96*se_cml < 0 | b_cml - 1.96*se_cml > 0, cml_dp = b_cml_dp + 1.96*se_cml_dp < 0 | b_cml_dp - 1.96*se_cml_dp > 0)
+tmp = c(seed = ii, K = K, b_fusio = bhat2, se_fusio = se_bhat2, 
+cover_fusio = bci[2] > theta & bci[1] < theta, fusio = bci[2] < 0 | bci[1] > 0)
 out = rbind(out, tmp)
 } # end if
 } # end loop
 
 out = as.data.frame(out)
-colnames(out) = c('seed', 'K', 's2_gamma_theo', 's2_theta_theo', 's2_gamma_emp', 's2_theta_emp', 'b_fusio', 'b_ivw', 'b_egger', 'b_cml', 'b_cml_dp', 'se_fusio', 'se_ivw', 'se_egger', 'se_cml', 'se_cml_dp', 'cover_fusio', 'cover_ivw', 'cover_egger', 'cover_cml', 'cover_cml_dp', 'fusio', 'ivw', 'egger', 'cml', 'cml_dp')
+colnames(out) = c('seed', 'K', 'b_fusio', 'se_fusio', 'cover_fusio', 'fusio')
 
-out_file_name = paste0("out/sim7c_m_", m, "_nx_", nx, "_ny_", ny, "_bgamma_", b_gamma, "_quhp_", q_uhp, "_balpha_", b_alpha, "_theta_", theta, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_qchp_", q_chp, "_bphi_", b_phi, "_kgamma_", kappa_gamma, "_ktheta_", kappa_theta, "_seed_", seed_k, ".txt")
+out_file_name = paste0("out/sim_m_", m, "_nx_", nx, "_ny_", ny, "_bgamma_", b_gamma, "_quhp_", q_uhp, "_balpha_", b_alpha, "_theta_", theta, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_qchp_", q_chp, "_bphi_", b_phi, "_kgamma_", kappa_gamma, "_ktheta_", kappa_theta, "_seed_", seed_k, ".txt")
 fwrite(out, out_file_name)
 
 cat("File saved!\n", out_file_name)
