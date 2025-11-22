@@ -17,7 +17,6 @@ Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp")
 Rcpp::sourceCpp("fusiomr/fusiomr_m_multi_exp.cpp")
 Rcpp::sourceCpp("dgf/fastlm.cpp")
 
-
 args <- commandArgs(trailingOnly = T)
 
 m = args[1]
@@ -127,7 +126,6 @@ bci_2_memo = post_flip$bci2
 # sigma2_theta1 = mean(res_memo$sigma2_theta1_tk[ids], na.rm = T)
 # sigma2_theta2 = mean(res_memo$sigma2_theta2_tk[ids], na.rm = T)
 
-
 # FusioMRs empirical (outcome 2, smaller population)
 niter = 20000
 # parameters for variance priors
@@ -151,21 +149,53 @@ post_flip = label_flip(niter, res2, rep(0, K2))
 b_s2 = post_flip$b_mean; se_s2 = post_flip$b_sd
 bci_s2 = post_flip$bci
 
+# competing methods (single-outcome MR, outcome 2)
+mr.obj = MendelianRandomization::mr_input(bx = b_exp_2s, bxse = se_exp_2s, by = b_out_2s, byse = se_out_2s)
+# IVW fixed
+IVW_f = MendelianRandomization::mr_ivw(mr.obj, model = 'fixed')
+b_ivw = IVW_f$Estimate; se_ivw = IVW_f$StdError
+# MR-Egger
+Egger = try(MendelianRandomization::mr_egger(mr.obj))
+if(class(Egger) != 'try-error' & !is.null(Egger)) {
+b_egger = Egger$Estimate; se_egger = Egger$StdError.Est
+} else {b_egger = se_egger = NA}
+# cML
+cml = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = F, num_pert = 200, n = nx2)
+b_cml = cml$Estimate; se_cml = cml$StdError
+# cML-DP
+cml_dp = MendelianRandomization::mr_cML(mr.obj, MA = T, DP = T, num_pert = 200, n = nx2)
+b_cml_dp = cml_dp$Estimate; se_cml_dp = cml_dp$StdError
 
+# MR2
+betaHat_Y = as.matrix(cbind(b_out_1, b_out_2))
+betaHat_X = as.matrix(cbind(b_exp_1, b_exp_2))
+colnames(betaHat_Y) = colnames(betaHat_X) = NULL
+MR2_output = MR2(betaHat_Y, betaHat_X, EVgamma = c(1,2), niter = 7500, burnin = 2500, thin = 5, monitor = 1000)
+# head(MR2_output$postMean$theta)
+p_MR2_2 = MR2_output$samplerPar$pval[2,2]
+PostProc_output = PostProc(MR2_output, betaHat_Y, betaHat_X)
+b_MR2_2 = PostProc_output$thetaPost[2,2]
+bci_MR2_2 = PostProc_output$thetaPost_CI[2,2,]
+  
 # output
 tmp = c(seed = ii, K = K, K1 = K1, K2 = K2, nx1=nx1, nx2=nx2, ny1=ny1, ny2=ny2,
-s2_gamma1_theo = (b_gamma1-a_gamma1)^2/12, s2_theta1_theo = (b_alpha1-a_alpha1)^2/12, 
-s2_gamma1_emp = max(1e-3, (var(b_exp_1_raw) - mean(se_exp_1_raw)^2)), 
-s2_theta1_emp = max(1e-6, (var(b_out_1_raw)-mean(se_out_1_raw^2))), 
-b_fusiom = b2_memo, b_fusios = b_s2, se_fusiom = se2_memo, se_fusios = se_s2, cover_fusiom = bci_2_memo[2] > theta2 & bci_2_memo[1] < theta2, cover_fusios = bci_s2[2] > theta2 & bci_s2[1] < theta2, fusiom = bci_2_memo[2] < 0 | bci_2_memo[1] > 0, fusios = bci_s2[2] < 0 | bci_s2[1] > 0)
+b_fusiom = b2_memo, b_fusios = b_s2, b_ivw = b_ivw, b_egger = b_egger, b_cml = b_cml, b_cml_dp = b_cml_dp, b_MR2 = b_MR2_2,
+se_fusiom = se2_memo, se_fusios = se_s2, se_ivw = se_ivw, se_egger = se_egger, se_cml = se_cml, se_cml_dp = se_cml_dp, se_MR2 = NA,
+cover_fusiom = bci_2_memo[2] > theta2 & bci_2_memo[1] < theta2, cover_fusios = bci_s2[2] > theta2 & bci_s2[1] < theta2, cover_ivw = b_ivw + 1.96*se_ivw > theta2 & b_ivw - 1.96*se_ivw < theta2, cover_egger = b_egger + 1.96*se_egger > theta2 & b_egger - 1.96*se_egger < theta2, cover_cml = b_cml + 1.96*se_cml > theta2 & b_cml - 1.96*se_cml < theta2, cover_cml_dp = b_cml_dp + 1.96*se_cml_dp > theta2 & b_cml_dp - 1.96*se_cml_dp < theta2, cover_MR2 = bci_MR2_2[2] > theta2 & bci_MR2_2[1] < theta2,
+fusiom = bci_2_memo[2] < 0 | bci_2_memo[1] > 0, fusios = bci_s2[2] < 0 | bci_s2[1] > 0, ivw = b_ivw + 1.96*se_ivw < 0 | b_ivw - 1.96*se_ivw > 0, egger = b_egger + 1.96*se_egger < 0 | b_egger - 1.96*se_egger > 0, cml = b_cml + 1.96*se_cml < 0 | b_cml - 1.96*se_cml > 0, cml_dp = b_cml_dp + 1.96*se_cml_dp < 0 | b_cml_dp - 1.96*se_cml_dp > 0, MR2 = p_MR2_2 < 0.05
+)
 out = rbind(out, tmp)
 } # end if
 } # end loop
 
 out = as.data.frame(out)
-colnames(out) = c('seed', 'K', 'K1', 'K2', 'nx1', 'nx2', 'ny1', 'ny2', 's2_gamma_theo', 's2_theta_theo', 's2_gamma_emp', 's2_theta_emp', 'b_fusiom', 'b_fusios', 'se_fusiom', 'se_fusios', 'cover_fusiom', 'cover_fusios', 'fusiom', 'fusios')
+colnames(out) = c('seed', 'K', 'K1', 'K2', 'nx1', 'nx2', 'ny1', 'ny2', 
+'b_fusiom', 'b_fusios', 'b_ivw', 'b_egger', 'b_cml', 'b_cml_dp', 'b_MR2', 
+'se_fusiom', 'se_fusios', 'se_ivw', 'se_egger', 'se_cml', 'se_cml_dp', 'se_MR2',
+'cover_fusiom', 'cover_fusios', 'cover_ivw', 'cover_egger', 'cover_cml', 'cover_cml_dp', 'cover_MR2',
+'fusiom', 'fusios', 'ivw', 'egger', 'cml', 'cml_dp', 'MR2')
 
-out_file_name = paste0("out/sim5d_m_", m, "_bgamma1_", b_gamma1, "_bgamma2_", b_gamma2, "_rhogamma_", rho_gamma, "_quhp1_", q_uhp1, "_quhp2_", q_uhp2, "_balpha1_", b_alpha1, "_balpha2_", b_alpha2, "_rhoalpha_", rho_alpha, "_bphi1_", b_phi1, "_bphi2_", b_phi2, "_rhoeta_", rho_eta, "_theta1_", theta1, "_theta2_", theta2, "_qchp1_", q_chp1, "_qchp2_", q_chp2, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_seed_", seed_k, ".txt")
+out_file_name = paste0("out/sim_m_", m, "_bgamma1_", b_gamma1, "_bgamma2_", b_gamma2, "_rhogamma_", rho_gamma, "_quhp1_", q_uhp1, "_quhp2_", q_uhp2, "_balpha1_", b_alpha1, "_balpha2_", b_alpha2, "_rhoalpha_", rho_alpha, "_bphi1_", b_phi1, "_bphi2_", b_phi2, "_rhoeta_", rho_eta, "_theta1_", theta1, "_theta2_", theta2, "_qchp1_", q_chp1, "_qchp2_", q_chp2, "_pcut_", p_cutoff, "_cgamma_", c_gamma, "_ctheta_", c_theta, "_seed_", seed_k, ".txt")
 fwrite(out, out_file_name)
 
 cat("File saved!\n", out_file_name, "\n")
