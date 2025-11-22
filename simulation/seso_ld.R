@@ -11,7 +11,7 @@ library(cisMRcML)
 
 source("dgf/dgm4_ld.R")
 source("functions/set_var_prior.R")
-source("functions/set_init.R")
+source("functions/set_init_seso.R")
 Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp"")
 Rcpp::sourceCpp("dgf/fastlm.cpp"")
 
