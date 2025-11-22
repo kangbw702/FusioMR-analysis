@@ -7,6 +7,7 @@ library(LaplacesDemon)
 library(dirmult)
 library(invgamma)
 library(Rcpp)
+library(MR2)
 
 source("functions/set_var_prior.R")
 source("functions/utilities.R")
@@ -44,8 +45,23 @@ b2_memo = post_flip$b2_mean; se2_memo = post_flip$b2_sd; p2_memo = 2*exp(pnorm(a
 bci_1_memo = post_flip$bci1
 bci_2_memo = post_flip$bci2
 
+# MR2, multi-response
+betaHat_Y = as.matrix(cbind(b_out_1, b_out_2))
+betaHat_X = as.matrix(cbind(b_exp_1, b_exp_2))
+colnames(betaHat_Y) = colnames(betaHat_X) = NULL
+MR2_output = MR2(betaHat_Y, betaHat_X, EVgamma = c(1,2), niter = 7500, burnin = 2500, thin = 5, monitor = 1000)
+# head(MR2_output$postMean$theta)
+p_MR2_1 = MR2_output$samplerPar$pval[1,1]
+p_MR2_2 = MR2_output$samplerPar$pval[2,2]
+PostProc_output = PostProc(MR2_output, betaHat_Y, betaHat_X)
+b_MR2_1 = PostProc_output$thetaPost[1,1]
+b_MR2_2 = PostProc_output$thetaPost[2,2]
+bci_MR2_1 = PostProc_output$thetaPost_CI[2,1,]
+bci_MR2_2 = PostProc_output$thetaPost_CI[2,2,]
+
+
 # summarize
-res = c(K = K, b_fusiom = b2_memo, se_fusiom = se2_memo, p_fusiom = p2_memo)
+res = c(K = K, b_fusiom = b2_memo, se_fusiom = se2_memo, p_fusiom = p2_memo, b_MR2_2, p_MR2_2)
 res
 
 
