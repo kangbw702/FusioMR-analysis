@@ -10,7 +10,7 @@ library(MendelianRandomization)
 source("dgf/dgm4.R")
 source("functions/set_var_prior.R")
 source("functions/set_init_seso.R")
-Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp")
+Rcpp::sourceCpp("fusiomr/fusiomr_s_uhp_only.cpp")
 Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 args <- commandArgs(trailingOnly = T)
