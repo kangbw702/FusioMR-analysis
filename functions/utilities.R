@@ -82,3 +82,16 @@ label_flip_joint = function(niter, res, eta_true_1, eta_true_2) {
   eta_1_est = eta_1_post, eta_2_est = eta_2_post, b1_mean = b1_mean, b1_sd = b1_sd, b2_mean = b2_mean, b2_sd = b2_sd, bci1 = bci1, bci2 = bci2))
   
 }
+
+clump <- function(dat, SNP_col = "eQTL_variant_id", pval_col = "rowmeta", clump_kb = 250, clump_r2 = 0.1, clump_p = 0.999, bfile = "/scratch/t.phs.yihaolu/GWAS_summary_statistics/GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.SHAPEIT2_phased.MAF01", plink_bin = "plink", pop="EUR") {
+df <- data.frame(rsid = dat[, ..SNP_col], pval = dat[,..pval_col])
+colnames(df) = c("rsid", "pval")
+out <- tryCatch({
+ieugwasr::ld_clump(df, clump_kb=clump_kb, clump_r2=clump_r2, clump_p=clump_p, bfile=bfile, plink_bin = plink_bin, pop = pop)
+}, silent = TRUE, error = function(x) return(NA)
+)
+if(length(out)==1) return(NA)
+MRdat <- dat[which(unlist(dat[,..SNP_col]) %in% out$rsid),]
+return(MRdat)
+}
+
