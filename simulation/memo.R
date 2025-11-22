@@ -13,19 +13,12 @@ source("functions/set_var_prior.R")
 source("functions/set_init_seso.R")
 source("functions/set_init_memo.R")
 source("functions/utilities.R")
-Rcpp::sourceCpp("fusiomr/gibbs_seso_uhpchp.cpp")
-Rcpp::sourceCpp("fusiomr/gibbs_joint_rcpp_nopr_pp_bound.cpp")
+Rcpp::sourceCpp("fusiomr/fusiomr_s.cpp")
+Rcpp::sourceCpp("fusiomr/fusiomr_m_multi_exp.cpp")
 Rcpp::sourceCpp("dgf/fastlm.cpp")
 
 
 args <- commandArgs(trailingOnly = T)
-param = read.csv(args[1], header = T)
-offset = as.numeric(args[2])
-args = as.numeric(unlist(param[offset,]))
-print(args)
-
-#param = read.csv("param_sim5.csv", header = T)
-#args = as.numeric(unlist(param[9,]))
 
 m = args[1]
 nx1 = args[2]
