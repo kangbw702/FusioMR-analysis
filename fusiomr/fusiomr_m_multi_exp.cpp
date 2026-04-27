@@ -131,7 +131,7 @@ List gibbs_joint_rcpp_nopr(int niter, int K,
     if (Sigma_gamma_sample(3,0) > 10) Sigma_gamma_sample(3,0) = 10;
     Sigma_gamma_cur(0,0) = Sigma_gamma_sample(0,0);
     Sigma_gamma_cur(1,1) = Sigma_gamma_sample(3,0);
-    Sigma_gamma_cur(0,1) = Sigma_gamma_sample(0,0)*Sigma_gamma_sample(3,0)*rho_gamma;
+    Sigma_gamma_cur(0,1) = sqrt(Sigma_gamma_cur(0,0)) * sqrt(Sigma_gamma_cur(1,1))*rho_gamma;
     Sigma_gamma_cur(1,0) = Sigma_gamma_cur(0,1);
     sigma2_gamma1_tk[iter+1] = Sigma_gamma_cur(0,0);
     sigma2_gamma2_tk[iter+1] = Sigma_gamma_cur(1,1);
@@ -153,7 +153,7 @@ List gibbs_joint_rcpp_nopr(int niter, int K,
     if (Sigma_theta_sample(3,0) > 10) Sigma_theta_sample(3,0) = 10;
     Sigma_theta_cur(0,0) = Sigma_theta_sample(0,0);
     Sigma_theta_cur(1,1) = Sigma_theta_sample(3,0);
-    Sigma_theta_cur(0,1) = Sigma_theta_sample(0,0)*Sigma_theta_sample(3,0)*rho_theta;
+    Sigma_theta_cur(0,1) = sqrt(Sigma_theta_cur(0,0)) * sqrt(Sigma_theta_cur(1,1))*rho_theta;
     Sigma_theta_cur(1,0) = Sigma_theta_cur(0,1);
     sigma2_theta1_tk[iter+1] = Sigma_theta_cur(0,0);
     sigma2_theta2_tk[iter+1] = Sigma_theta_cur(1,1);
